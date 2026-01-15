@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cámara Descartable</title>
+    <style>
+        body { background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; }
+        #status { margin-bottom: 20px; color: #888; }
+        /* El visor está oculto visualmente */
+        video { display: none; }
+        #btn-shoot {
+            width: 100px; height: 100px; border-radius: 50%; border: 5px solid white;
+            background: red; cursor: pointer; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        #btn-shoot:active { transform: scale(0.95); background: darkred; }
+    </style>
+</head>
+<body>
+
+    <div id="status">Cámara Lista (Modo Ciego)</div>
+    <video id="video" autoplay playsinline></video>
+    <button id="btn-shoot"></button>
+    <p>Toca para capturar</p>
+
+    <script>
+        const video = document.getElementById('video');
+        const btn = document.getElementById('btn-shoot');
+        const status = document.getElementById('status');
+
+        // Acceder a la cámara trasera sin mostrarla
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
+            .then(stream => { video.srcObject = stream; })
+            .catch(err => { status.innerText = "Error: No se pudo acceder a la cámara"; });
+
+        btn.onclick = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            
+            // Dibujar la foto en el canvas oculto
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Convertir a imagen
+            const dataUrl = canvas.toDataURL('image/jpeg');
+            
+            // --- AQUÍ LÓGICA DE ALMACENAMIENTO ---
+            // Por ahora, para que lo pruebes, lo descargamos automáticamente:
+            const link = document.createElement('a');
+            link.download = `foto_${Date.now()}.jpg`;
+            link.href = dataUrl;
+            link.click();
+
+            status.innerText = "¡Foto capturada y guardada!";
+            setTimeout(() => { status.innerText = "Cámara Lista (Modo Ciego)"; }, 2000);
+        };
+    </script>
+</body>
+</html>
